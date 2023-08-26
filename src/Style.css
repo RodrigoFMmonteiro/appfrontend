@@ -1,0 +1,10 @@
+#barra{
+  float:left;
+  background-color:transparent;
+  padding-left:5px;
+  font-size:18px;
+  border:none;
+  height:32px;
+  width:260px;
+  border-radius: 5px;
+}
