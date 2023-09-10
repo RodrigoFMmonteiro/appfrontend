@@ -30,9 +30,10 @@ export default function Formulario(props){
   useEffect(()=>{
     fetch("https://129.146.68.51/aluno39-pfsii/sugestoes", 
           {method: "GET"})
-          .then((resposta)=>{
+          .then((resposta)=> {
             return resposta.json();
-          }).then((dados)=>{
+          })
+          .then((dados)=>{
             setLista(dados);
     })
     .catch((erro)=>{
