@@ -1,14 +1,26 @@
 import Formulario from "./Formulario";
-import logo from './assets/logo.png';
+import FormularioPrestador from "./FormularioPrestador";
+import Pagina404 from "./Pagina404";
+import Menu from "./Templates/Menu";
 import './Estilo.css';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
 
 
 function App() {
   
   return (
     <div className="banner">
-      <img src={logo} alt="logo"/>
-      <Formulario></Formulario>
+      <BrowserRouter>
+        <Routes>
+
+          <Route path="/" exact element={<Menu/>} />
+          <Route path="/FormularioPrestador" element={<FormularioPrestador/>} />
+          <Route path="/Formulario" element={<Formulario/>} />
+          <Route path="*" element={<Pagina404/>} />
+
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }

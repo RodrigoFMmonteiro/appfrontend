@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Col, Container, FormSelect, Row, Spinner } from "react-bootstrap";
+import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
 
 export default function CaixaSelecao({enderecoDado,
                                      campoChave, 
@@ -18,11 +18,11 @@ export default function CaixaSelecao({enderecoDado,
             setCarregandoDados(true);
             fetch(enderecoDado, {method:"GET"}).then((resposta)=>{
                 if (resposta.ok){
-                                return resposta.json();
-                                }
+                    return resposta.json();
+                }
                 else {
                     return ([{
-                            [campoChave]:0,
+                            [campoChave]: 0,
                             [campoExibicao]: "Não foi possível retornar dados"
                             }]);
                     }
@@ -33,12 +33,12 @@ export default function CaixaSelecao({enderecoDado,
                     setValorSelecionado(listadados[0]);
                     funcaoSelecao(listadados[0])
                 }
-                    });
+                });
         } catch(erro){
             setCarregandoDados(false)
             setDados([{
-                        [campoChave]:0,
-                        [campoExibicao]: "Não foi possível retornar dados"
+                        [campoChave]: 0,
+                        [campoExibicao]: "Não foi possível retornar dados: "+erro.message
                      }]);
         }
     }, [])
@@ -47,8 +47,8 @@ export default function CaixaSelecao({enderecoDado,
         <Container border="true">
             <Row>
                 <Col md={11}>
-                    <FormSelect value={valorSelecionado[campoExibicao]}
-                                onChange={(evento) => {
+                    <Form.Select
+                                 onChange={(evento) => {
                                     const itemSelecionado = evento.currentTarget.value;
                                     const pos = dados.map((item)=> item[campoChave].toString()).indexOf(itemSelecionado);
                                     setValorSelecionado(dados[pos]);
@@ -63,7 +63,7 @@ export default function CaixaSelecao({enderecoDado,
                             })
                         }
 
-                    </FormSelect>
+                    </Form.Select>
                 </Col>
 
                 <Col d={1}>

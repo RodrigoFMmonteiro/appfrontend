@@ -76,7 +76,7 @@ export default function BarraBusca({placeHolder, dados, campoChave, campoBusca, 
                                         setItemSlecionado(true);
                                         funcaoSelecao(item);
                                         setItemSlecionado(false)
-                                        funcaoSelecao({})
+                                        //funcaoSelecao({})
                                         inputBusca.current.setCustomValidity("");
                                         let componenteResult = document.querySelector('[data-result]');
                                         componenteResult.style.display="none";
