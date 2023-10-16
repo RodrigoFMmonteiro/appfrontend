@@ -1,66 +1,99 @@
 import { Container, Form, Row, Col, FormLabel, Button} from "react-bootstrap";
 import { useState, useEffect } from "react";
-import './Estilo.css';
+import './Estilização/Estilo.css';
 import CaixaSelecao from "./CaixaSelecao";
 import TabelaItensSugestoes from "./tabelas/TabelaItens";
 import Pagina from "./Templates/Pagina";
 import ReactInputMask from "react-input-mask";
+import { urlBase } from "./Utilitarios";
 
 export default function FormularioPrestador(props){
 
-    function manipulaMudanca(e){
-        const alvo = e.target.name;
-        setPrestador({ ...prestador, [alvo]: e.target.value});
-      }
+    const [validated, setValidate] = useState(false);
+    const [sugestaoSelecionada, setSugestaoSelecionada] = useState({});
+    //const [lista, setLista] = useState([]);
+    const [listaDeSugestoes, setListaDeSugestoes] = useState([]);           //alteração setPrestador
+    const [prestador, setPrestador] = useState(props.prestadorEmEdicao);
 
-    function gravarPrestador(){
-        let listaDeItens = [];
-        for (const item of listaDeSugestoes){
-            listaDeItens.push({
-                ID: item.ID,
-                nome: item.nome,
-                sobrenome: item.sobrenome,
-                telefone: item.telefone,
-                data: item.data,
-                sugestao: item.sugestao
-            })
+    function manipulaMudanca(e){
+        const elemForm = e.currentTarget;
+        const id = elemForm.id;
+        const valor = elemForm.value;
+        setPrestador({ ...prestador, [id]: valor});
         }
 
-        fetch('https://129.146.68.51/aluno39-pfsii/prestadores',{
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                "nome": prestador.nome,
-                "telefone": prestador.telefone,
-                "sugestoes": listaDeItens
-            })
-        }).then((resposta) =>{
-            return resposta.json();
-        }).then((dados)=>{
-            if (dados.status) {
-                setPrestador({ ...prestador, ID: dados.ID});
+    function gravarPrestador(event){
+        const form = event.currentTarget;
+        if (form.checkValidity()) {
+            if (!props.modoEdicao){
+            let listaDeItens = [];
+            for (const item of listaDeSugestoes){
+                listaDeItens.push({
+                    ID: item.ID,
+                    nome: item.nome,
+                    sobrenome: item.sobrenome,
+                    telefone: item.telefone,
+                    data: item.data,
+                    sugestao: item.sugestao
+                    })
+                }
+            
+            const update = {
+                'nome'      : prestador.nome,
+                'telefone'  : prestador.telefone,
+                'sugestoes' : listaDeItens,
+                };
+
+            const options = {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(update),
+                };
+
+            fetch(urlBase+'/prestadores', options).then((resposta) =>{
+                return resposta.json();
+            }).then((dados)=>{
+                if (dados.status) {
+                    setPrestador({ ...prestador, ID: dados.ID});
+                    props.setModoEdicao(false);
+                    let prestadores = props.listaPrestadores;
+                    prestadores.push({
+                        'ID':       prestador.ID,
+                        'nome':     prestador.nome,
+                        'telefone': prestador.telefone
+                    })
+                    props.setPrestador(prestadores);
+                    props.exibirTabela(true);
+                }
+                window.alert(dados.mensagem);
+            }).catch((erro)=>{
+                window.alert("Não foi possível cadastrar: " +erro.message);
+                console.log(erro);
+            })}
+
+            else {
+                fetch(urlBase+"/prestadores",{
+                    method:"PUT",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(prestador)
+                    }).then(()=>{
+                     props.setModoEdicao(false);
+                    alert("Atualizado com sucesso!");
+                    props.exibirTabela(true);
+                    }).then(()=>{
+                    window.location.reload();
+                    });
             }
-            window.alert(dados.mensagem)
-        }).catch((erro)=>{
-            alert("Não foi possível cadastrar:" +erro.message)
-        })
+            setValidate(false);
+    }
+    else {
+        setValidate(true);
+    }
+    event.preventDefault();
+    event.stopPropagation();
     }
 
     //useEffect
-
-
-const [sugestaoSelecionada, setSugestaoSelecionada] = useState({});
-//const [lista, setLista] = useState([]);
-const [listaDeSugestoes, setListaDeSugestoes] = useState([]);
-//const [produtoSelecionado, setProdutoSelecionado] = useState({});
-
-const [prestador, setPrestador] = useState({
-    ID: 0,
-    nome: '',
-    telefone: '',
-    sugestoes: []            //conferir no backen
-                          //Talvez seja listaDeSugestoes.
-});
 
     return (
         <Pagina>
@@ -69,41 +102,57 @@ const [prestador, setPrestador] = useState({
                 <div className="cabecalho">
                 <h2 className="text-center ms-5">Cadastro de Prestador</h2>
                 </div>
-                <Form>
+                <Form id="cadastroPrestador" onSubmit={gravarPrestador} noValidate validated={validated}>
                     <Row>
                         <Col>
-                            <Form.Label>Nome</Form.Label>
-                            <Form.Control
-                                className="mb-3"
-                                type="text"
-                                required
-                                name="nome"
-                                value={prestador.nome}
-                                onChange={manipulaMudanca}
-                            />
+                            <Form.Group as={Col}>
+                                <Form.Label>ID</Form.Label>
+                                <Form.Control
+                                    className="mb-3"
+                                    type="text"
+                                    disabled
+                                    id="ID"
+                                    value={prestador.ID}
+                                    onChange={manipulaMudanca}/>
+                                </Form.Group>
                         </Col>
                         <Col>
-                            <Form.Label>Telefone</Form.Label>
-                            <ReactInputMask
-                                mask={'(99) 99999-9999'}
-                                value={prestador.telefone}
-                                onChange={manipulaMudanca}>
-                                {()=><Form.Control
-                                       className="mb-3"
-                                       type="text"
-                                       required
-                                       name="telefone"
-                                />}
-                            </ReactInputMask>
-                            <Form.Control.Feedback type="invalid">Insira um número de Celular</Form.Control.Feedback>
+                            <Form.Group as={Col}>
+                                <Form.Label>Nome</Form.Label>
+                                <Form.Control
+                                    className="mb-3"
+                                    type="text"
+                                    required
+                                    id="nome"
+                                    value={prestador.nome}
+                                    onChange={manipulaMudanca}/>
+                                    <Form.Control.Feedback type="invalid">Insira um nome</Form.Control.Feedback>
+                                </Form.Group>
+                        </Col>
+                        <Col>
+                            <Form.Group as={Col}>
+                                <Form.Label>Telefone</Form.Label>
+                                <ReactInputMask
+                                    mask={'(99) 99999-9999'}
+                                    value={prestador.telefone}
+                                    onChange={manipulaMudanca}>
+                                    {()=><Form.Control
+                                        className="mb-3"
+                                        type="text"
+                                        required
+                                        id="telefone"
+                                    />}
+                                </ReactInputMask>
+                                <Form.Control.Feedback type="invalid">Insira um número de Celular</Form.Control.Feedback>
+                            </Form.Group>
                             
                         </Col>
                     </Row>  
             
                     <Row>
-                        <Form.Label>Selecione uma ação</Form.Label>
+                        <Form.Label>Selecione no mínimo uma ação</Form.Label>
                         <CaixaSelecao 
-                            enderecoDado={'https://129.146.68.51/aluno39-pfsii/sugestoes'}
+                            enderecoDado={urlBase+'/sugestoes'}
                             campoChave={"ID"}
                             campoExibicao={"sugestao"}
                             funcaoSelecao={setSugestaoSelecionada}/>
@@ -117,7 +166,7 @@ const [prestador, setPrestador] = useState({
                                     className="mb-3"
                                     value={sugestaoSelecionada.ID}
                                     type="text"
-                                    id=""
+                                    id="codigo"
                                     disabled/>
                         </Col>
                         
@@ -127,7 +176,7 @@ const [prestador, setPrestador] = useState({
                                     className="mb-3"
                                     value={sugestaoSelecionada.nome}
                                     type="text"
-                                    id=""
+                                    id="nomeSelecionado"
                                     disabled/>
                         </Col>
                         <Col md={4}>
@@ -136,7 +185,7 @@ const [prestador, setPrestador] = useState({
                                     className="mb-3"
                                     value={sugestaoSelecionada.sugestao}
                                     type="text"
-                                    id=""
+                                    id="sugestaoSelecionada"
                                     disabled/>
                         </Col>
                         <Col md={2}>
@@ -164,12 +213,13 @@ const [prestador, setPrestador] = useState({
                             dados={prestador}
                             setListaItens={setListaDeSugestoes}/>
                     </Row>
-
-
                 </Container>
-                <Button onClick={gravarPrestador} className="mt-3" variant="primary" type="submit">Cadastrar</Button>
-                {' '}
-                <Button className="mt-3" variant="dark" type="button">Voltar</Button>
+               
+                        <Button className="mt-3" variant="primary" type="submit">Cadastrar</Button>
+                        {" "}
+                        <Button className="mt-3" variant="dark" type="button" onClick={()=>{
+                            props.exibirTabela(true);
+                        }}>Voltar</Button>
                 </Form>
 
             </Container>

@@ -1,8 +1,9 @@
 import {Container, Form, FormGroup, Button, FormLabel} from "react-bootstrap";
 import BarraBusca from "./BarraBusca";
 import { useEffect, useState } from "react";
-import './Estilo.css';
+import './Estilização/Estilo.css';
 import Pagina from "./Templates/Pagina";
+import { urlBase } from "./Utilitarios";
 
 export default function Formulario(props){
 
@@ -11,18 +12,13 @@ export default function Formulario(props){
     setSugestao({ ...sugestao, [alvo]: e.target.value});
   }
 
-  const [sugestao, setSugestao] = useState({
-    ID: 0,
-    responsavel: '',
-    descricao: '',
-    autor: '',
-    sugestao: {}
-    })
-
-  const [lista, setLista] = useState([])
+  const [sugestao, setSugestao] = useState(props.projetoEmEdicao)
+  const [lista, setLista] = useState([]);
+  const [sugestaoSelecionada, setSugestaoSelecionada] = useState({});
+  const [validated, setValidate] = useState(false);
 
   useEffect(()=>{
-    fetch("https://129.146.68.51/aluno39-pfsii/sugestoes", 
+    fetch(urlBase+"/sugestoes", 
           {method: "GET"})
           .then((resposta)=> {
             return resposta.json();
@@ -35,28 +31,55 @@ export default function Formulario(props){
     });
   },[])
   
-  const [sugestaoSelecionada, setSugestaoSelecionada] = useState({});
+  function gravarProjeto(event){
+    const form = event.currentTarget;
 
-  function gravarProjeto(){
-    fetch("https://129.146.68.51/aluno39-pfsii/projetos",
-    {method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      "responsavel": sugestao.responsavel,
-      "descricao":sugestao.descricao,
-      "autor": sugestao.autor,
-      "sugestao": sugestaoSelecionada
-    })}
-    ).then((resposta)=> {
-        return resposta.json();
-    }).then((dados)=>{
-      if (dados.status) {
-          setSugestao({...sugestao, ID: dados.ID});
-      }
-      window.alert(dados.mensagem)
-    }).catch((erro)=>{
-      alert("Não foi possível cadastrar: " +erro.message)
-    })
+    if (form.checkValidity()){
+      if (!props.modoEdicao) {
+        fetch(urlBase+"/projetos",
+        {method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+          "responsavel": sugestao.responsavel,
+          "descricao":sugestao.descricao,
+          "autor": sugestaoSelecionada.nome,
+          "sugestao": sugestaoSelecionada
+        })}
+        ).then((resposta)=> {
+            return resposta.json();
+        }).then((dados)=>{
+          if (dados.status) {
+              setSugestao({...sugestao, ID: dados.ID});
+              let projetos = props.listaProjetos
+              projetos.push(sugestao);
+              props.setProjeto(projetos);
+              props.exibirTabela(true); 
+          }
+          window.alert(dados.mensagem)
+        }).catch((erro)=>{
+          alert("Não foi possível cadastrar: " +erro.message)
+        })
+    }
+    else {
+          fetch(urlBase+"/projetos",{
+            method:"PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(sugestao)
+            }).then(()=>{
+            props.setModoEdicao(false);
+            alert("Atualizado com sucesso!");
+            props.exibirTabela(true);
+            }).then(()=>{
+            window.location.reload();
+        });
+    }
+    setValidate(false);
+  }
+    else {
+      setValidate(true);
+    }
+    event.preventDefault();
+    event.stopPropagation();
   }
 
     return (
@@ -65,7 +88,7 @@ export default function Formulario(props){
           <div className="cabecalho">
             <h2 className="text-center ms-5">Cadastro de Projetos</h2>
           </div>
-          <Form onSubmit={gravarProjeto}>
+          <Form id="cadastroProjeto" noValidate validated={validated} onSubmit={gravarProjeto}>
                 <Form.Group className="mb-3">
                     <Form.Label>ID</Form.Label>
                     <Form.Control value={sugestao.ID} disabled/>
@@ -78,9 +101,10 @@ export default function Formulario(props){
                                   value={sugestao.responsavel} 
                                   onChange={manipulaMudanca} 
                                   required/>
+                        <Form.Control.Feedback type="invalid">Insira um responsável</Form.Control.Feedback>
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="">
+                <Form.Group className="mb-3">
                     <Form.Label>Descrição da Ação</Form.Label>
                     <Form.Control type="text"
                                   name="descricao" 
@@ -88,21 +112,13 @@ export default function Formulario(props){
                                   value={sugestao.descricao} 
                                   onChange={manipulaMudanca} 
                                   required />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                    <Form.Label>Autor</Form.Label>
-                    <Form.Control type="text"
-                                  name="autor"
-                                  value={sugestao.autor} 
-                                  onChange={manipulaMudanca} 
-                                  required/>
-                </Form.Group>
-                
-                <FormGroup>
-                    <FormLabel>ID da sugestão</FormLabel>
+                        <Form.Control.Feedback type="invalid">Insira uma ação</Form.Control.Feedback>                               
+                    </Form.Group>
+                  
+                <FormGroup className="mb-3">
+                    <FormLabel>Pesquise pela sugestão</FormLabel>
                     <BarraBusca 
-                        placeHolder={"Pesquise o ID da sugestão"}
+                        placeHolder={"Pesquise por uma sugestão"}
                         dados={lista}
                         campoChave={"ID"}
                         campoBusca={"sugestao"}
@@ -111,9 +127,24 @@ export default function Formulario(props){
                     </BarraBusca>
                 </FormGroup>
 
+                <Form.Group className="mb-3">
+                    <Form.Label>Autor</Form.Label>
+                    <Form.Control type="text"
+                                  name="autor"
+                                  value={sugestaoSelecionada.nome} 
+                                  onChange={manipulaMudanca} 
+                                  required
+                                  disabled/>
+                        <Form.Control.Feedback type="invalid">Insira um autor</Form.Control.Feedback>
+                </Form.Group>
+                
+                
+
                 <Button onClick={gravarProjeto} className="mt-3" variant="primary" type="submit"> Cadastrar</Button>
                 {' '}
-                <Button className="mt-3" variant="dark" type="button">Voltar</Button>
+                <Button className="mt-3" variant="dark" type="button" onClick={()=>{
+                  props.exibirTabela(true)
+                }}>Voltar</Button>
             </Form>
         </Container>
       </Pagina>

@@ -1,7 +1,7 @@
 import { Nav } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { Cabecalho } from "./Cabecalho";
-import '../Estilo.css'
+import '../Estilização/Estilo.css'
 
 export default function Menu(props){
     return (
@@ -18,11 +18,11 @@ export default function Menu(props){
           </Nav.Item>
 
           <Nav.Item>
-            <Nav.Link> <Link to="/Formulario">Cadastro de Projetos</Link></Nav.Link>
+            <Nav.Link> <Link to="/TelaCadProjeto">Cadastro de Projetos</Link></Nav.Link>
           </Nav.Item>
 
           <Nav.Item>
-            <Nav.Link> <Link to="/FormularioPrestador">Cadastro de Prestradores</Link></Nav.Link>
+            <Nav.Link> <Link to="/TelaCadPrestador">Cadastro de Prestradores</Link></Nav.Link>
           </Nav.Item>
 
           <Nav.Item>

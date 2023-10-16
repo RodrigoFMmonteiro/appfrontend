@@ -1,4 +1,4 @@
-import Pagina from "./Templates/Pagina";
+import Pagina from "./Pagina";
 import { Alert } from "react-bootstrap";
 
 export default function Pagina404(props){

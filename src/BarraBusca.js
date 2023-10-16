@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Form, Container } from "react-bootstrap";
-import './Estilo.css';
+import './Estilização/Estilo.css';
 
 export default function BarraBusca({placeHolder, dados, campoChave, campoBusca, funcaoSelecao, valor}){
     const inputBusca = useRef();

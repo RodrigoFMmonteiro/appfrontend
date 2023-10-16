@@ -1,6 +1,6 @@
 import Menu from "../Templates/Menu";
 import { Container } from "react-bootstrap";
-import '../Estilo.css'
+import '../Estilização/Estilo.css'
 
 export default function Pagina(props){
     return (

@@ -1,8 +1,10 @@
 import Formulario from "./Formulario";
 import FormularioPrestador from "./FormularioPrestador";
-import Pagina404 from "./Pagina404";
+import Pagina404 from "./Templates/Pagina404";
+import TelaCadPrestador from "./Telas/TelaCadPrestador";
+import TelaCadProjeto from "./Telas/TelaCadProjeto";
 import Menu from "./Templates/Menu";
-import './Estilo.css';
+import './Estilização/Estilo.css';
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 
@@ -15,8 +17,8 @@ function App() {
         <Routes>
 
           <Route path="/" exact element={<Menu/>} />
-          <Route path="/FormularioPrestador" element={<FormularioPrestador/>} />
-          <Route path="/Formulario" element={<Formulario/>} />
+          <Route path="/TelaCadPrestador" element={<TelaCadPrestador/>} />
+          <Route path="/TelaCadProjeto" element={<TelaCadProjeto/>} />
           <Route path="*" element={<Pagina404/>} />
 
         </Routes>
